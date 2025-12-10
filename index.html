@@ -1,0 +1,2386 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام الموارد البشرية V32 - النسخة النهائية</title>
+    
+    <!-- مكتبات خارجية -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+        
+        * {
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        body { 
+            background-color: #f8fafc; 
+            color: #1e293b; 
+            font-size: 14px;
+        }
+        
+        .hidden { display: none !important; }
+        
+        /* تصميم الجداول */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            overflow-x: auto;
+            width: 100%;
+        }
+        
+        .grid-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            table-layout: auto; 
+        }
+        
+        .grid-table th { 
+            background: #1e293b; 
+            color: white; 
+            padding: 12px 8px; 
+            font-size: 0.85rem; 
+            font-weight: bold;
+            border-right: 1px solid #334155;
+        }
+        
+        .grid-table th:last-child { border-right: none; }
+        
+        .grid-table td { 
+            padding: 10px 8px; 
+            border-bottom: 1px solid #e2e8f0; 
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        
+        .grid-table tr:hover td { background-color: #f8fafc; }
+        
+        /* ألوان الأنواع */
+        .type-fine { background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #dc2626; border: 1px solid #fca5a5; }
+        .type-bonus { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); color: #16a34a; border: 1px solid #86efac; }
+        .type-ratio { background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); color: #7c3aed; border: 1px solid #c084fc; }
+        .type-points { background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%); color: #ea580c; border: 1px solid #fdba74; }
+        .type-reduction { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); color: #1d4ed8; border: 1px solid #93c5fd; }
+        .type-warning { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); color: #d97706; border: 1px solid #fbbf24; }
+        
+        /* الحقول */
+        .input-field { 
+            width: 100%; 
+            padding: 10px 12px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 8px; 
+            outline: none; 
+            transition: all 0.2s; 
+            background-color: white;
+            font-size: 0.9rem;
+        }
+        
+        .input-field:focus { 
+            border-color: #3b82f6; 
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); 
+        }
+        
+        /* الأزرار */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            border: none;
+            font-size: 0.9rem;
+        }
+        
+        .btn-primary { 
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); 
+            color: white; 
+        }
+        .btn-primary:hover { background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); transform: translateY(-1px); }
+        
+        .btn-secondary { 
+            background: #f1f5f9; 
+            color: #475569; 
+            border: 1px solid #cbd5e1;
+        }
+        .btn-secondary:hover { background: #e2e8f0; }
+        
+        .btn-danger { 
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); 
+            color: white; 
+        }
+        .btn-danger:hover { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); }
+        
+        /* التبويبات */
+        .tab-btn { 
+            padding: 12px 20px; 
+            font-weight: bold; 
+            color: #64748b; 
+            border-bottom: 3px solid transparent; 
+            transition: 0.3s; 
+            background: transparent;
+            cursor: pointer;
+            border: none;
+        }
+        .tab-btn:hover { color: #3b82f6; background: #f8fafc; }
+        .tab-btn.active { 
+            color: #3b82f6; 
+            border-color: #3b82f6; 
+            background: #eff6ff; 
+        }
+
+        /* مؤشر التحميل */
+        .loader { 
+            width: 20px; height: 20px; 
+            border: 3px solid #e2e8f0; 
+            border-top-color: #3b82f6; 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* زر الحفظ العائم */
+        .floating-save {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+            color: white; 
+            padding: 14px 30px; 
+            border-radius: 50px; 
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+            font-weight: bold; 
+            cursor: pointer; 
+            z-index: 1000;
+            display: flex; 
+            gap: 10px; 
+            align-items: center;
+            animation: slideUp 0.4s ease-out;
+        }
+        .floating-save:hover { transform: translateX(-50%) scale(1.05); box-shadow: 0 15px 30px rgba(16, 185, 129, 0.4); }
+        @keyframes slideUp { from { opacity: 0; transform: translate(-50%, 100%); } to { opacity: 1; transform: translate(-50%, 0); } }
+        
+        /* شريط الإحصائيات */
+        .stats-bar {
+            display: flex; 
+            gap: 10px; 
+            flex-wrap: wrap;
+            background: white; 
+            padding: 12px; 
+            border-radius: 10px; 
+            border: 1px solid #e2e8f0;
+            margin-bottom: 15px;
+        }
+        .stat-item {
+            background: #f8fafc; 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            font-size: 0.85rem;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* رسائل التنبيه */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 50px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: toastIn 0.3s ease-out;
+            border: 1px solid #334155;
+        }
+        
+        @keyframes toastIn {
+            from { opacity: 0; transform: translate(-50%, 100%); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+        
+        /* تحسينات للموبايل */
+        @media (max-width: 768px) {
+            .grid-table th, .grid-table td { padding: 8px 6px; font-size: 0.8rem; }
+            .btn { padding: 8px 16px; font-size: 0.85rem; }
+            .tab-btn { padding: 10px 16px; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body class="min-h-screen p-3 md:p-5">
+
+    <!-- حاوية رئيسية -->
+    <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden min-h-[95vh] border border-slate-200">
+        
+        <!-- الهيدر -->
+        <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-4 md:p-6 flex flex-wrap justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center shadow-lg">
+                    <i class="fas fa-users-cog text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-xl md:text-2xl">نظام الموارد البشرية <span class="bg-blue-500 text-xs px-2 py-1 rounded-full mr-2">V32</span></h1>
+                    <p id="headerSubtitle" class="text-slate-300 text-sm mt-1">جاري التحميل...</p>
+                </div>
+            </div>
+            <button id="logoutBtn" onclick="logout()" class="hidden bg-slate-800 hover:bg-red-600 text-white px-4 py-2.5 rounded-lg text-sm font-bold transition flex items-center gap-2 shadow-md">
+                <i class="fas fa-sign-out-alt"></i> خروج
+            </button>
+        </div>
+
+        <!-- المحتوى الرئيسي -->
+        <div class="flex-1 bg-slate-50 relative">
+            
+            <!-- شاشة تسجيل الدخول -->
+            <div id="loginSection" class="absolute inset-0 flex items-center justify-center z-50 bg-slate-50/95 p-4">
+                <div class="bg-white p-8 md:p-10 rounded-2xl shadow-xl border border-slate-200 w-full max-w-sm">
+                    <div class="text-center mb-8">
+                        <div class="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto border-4 border-white shadow-lg">
+                            <i class="fas fa-lock text-3xl text-blue-600"></i>
+                        </div>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2 text-center">تسجيل الدخول</h2>
+                    <p class="text-slate-500 text-sm mb-6 text-center">أدخل بياناتك للوصول إلى النظام</p>
+                    <div class="space-y-4">
+                        <input type="text" id="loginCode" class="input-field text-center" placeholder="الرمز الوظيفي">
+                        <input type="number" id="loginFP" class="input-field text-center" placeholder="رقم البصمة">
+                        <button onclick="performLogin()" id="btnLogin" class="w-full btn btn-primary py-3">
+                            <span>دخول النظام</span>
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                    </div>
+                    <p id="loginMsg" class="text-center text-red-500 text-sm font-bold mt-4 min-h-[20px]"></p>
+                </div>
+            </div>
+
+            <!-- لوحة التحكم الرئيسية -->
+            <div id="dashboardSection" class="hidden p-4 md:p-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div onclick="openBulkForm('fine')" id="btnFine" class="hidden bg-gradient-to-br from-white to-slate-50 border-l-4 border-red-500 p-5 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer group">
+                        <div class="p-3 bg-red-50 rounded-lg text-red-500 w-fit mb-3 group-hover:bg-red-100 transition">
+                            <i class="fas fa-gavel text-2xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-800">غرامات</h3>
+                        <p class="text-slate-500 text-xs mt-1">تسجيل الغرامات والعقوبات</p>
+                    </div>
+
+                    <div onclick="openBulkForm('bonus')" id="btnBonus" class="hidden bg-gradient-to-br from-white to-slate-50 border-l-4 border-green-500 p-5 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer group">
+                        <div class="p-3 bg-green-50 rounded-lg text-green-500 w-fit mb-3 group-hover:bg-green-100 transition">
+                            <i class="fas fa-gift text-2xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-800">مكافآت</h3>
+                        <p class="text-slate-500 text-xs mt-1">تسجيل المكافآت والحوافز</p>
+                    </div>
+
+                    <div onclick="openBulkForm('ratio')" id="btnRatio" class="hidden bg-gradient-to-br from-white to-slate-50 border-l-4 border-purple-500 p-5 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer group">
+                        <div class="p-3 bg-purple-50 rounded-lg text-purple-500 w-fit mb-3 group-hover:bg-purple-100 transition">
+                            <i class="fas fa-chart-pie text-2xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-800">نسب</h3>
+                        <p class="text-slate-500 text-xs mt-1">تسجيل النسب والعمولات</p>
+                    </div>
+
+                    <div onclick="openBulkForm('points')" id="btnPoints" class="hidden bg-gradient-to-br from-white to-slate-50 border-l-4 border-orange-500 p-5 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer group">
+                        <div class="p-3 bg-orange-50 rounded-lg text-orange-500 w-fit mb-3 group-hover:bg-orange-100 transition">
+                            <i class="fas fa-star text-2xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-800">نقاط</h3>
+                        <p class="text-slate-500 text-xs mt-1">تسجيل وتعديل النقاط</p>
+                    </div>
+
+                    <div onclick="openBulkForm('reduction')" id="btnReduction" class="hidden bg-gradient-to-br from-white to-slate-50 border-l-4 border-blue-500 p-5 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer group">
+                        <div class="p-3 bg-blue-50 rounded-lg text-blue-500 w-fit mb-3 group-hover:bg-blue-100 transition">
+                            <i class="fas fa-minus-circle text-2xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-800">تخفيضات</h3>
+                        <p class="text-slate-500 text-xs mt-1">تخفيض قيمة الغرامات</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- بطاقات إضافية -->
+                    <div onclick="openMyReceived()" class="bg-gradient-to-br from-blue-50 to-white border border-blue-100 p-5 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 bg-blue-100 rounded-lg text-blue-600">
+                                <i class="fas fa-user text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-800">ملفي الشخصي</h3>
+                                <p class="text-slate-500 text-xs">عرض الدوام والمعاملات</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div onclick="openMyAdded()" class="bg-gradient-to-br from-orange-50 to-white border border-orange-100 p-5 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 bg-orange-100 rounded-lg text-orange-600">
+                                <i class="fas fa-history text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-800">سجل إضافاتي</h3>
+                                <p class="text-slate-500 text-xs">المعاملات التي أضفتها</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div onclick="openHRPortal()" id="btnHR" class="hidden bg-gradient-to-br from-slate-800 to-slate-900 text-white p-5 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition cursor-pointer">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 bg-slate-700 rounded-lg">
+                                <i class="fas fa-users-cog text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg">الموارد البشرية</h3>
+                                <p class="text-slate-300 text-xs">الإدارة والمتابعة</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div onclick="openSettings()" id="btnAdmin" class="hidden bg-gradient-to-br from-slate-700 to-slate-800 text-white p-5 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition cursor-pointer">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 bg-slate-600 rounded-lg">
+                                <i class="fas fa-cog text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg">الإعدادات</h3>
+                                <p class="text-slate-300 text-xs">إدارة الصلاحيات</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم الإضافة المتعددة -->
+            <div id="bulkSection" class="hidden flex flex-col h-full p-4">
+                <div class="flex flex-wrap justify-between items-center mb-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex items-center gap-3">
+                        <button onclick="showDashboard()" class="w-10 h-10 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition">
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <div>
+                            <h2 class="font-bold text-xl text-slate-800" id="bulkTitle">...</h2>
+                            <p class="text-slate-500 text-xs">إضافة متعددة</p>
+                        </div>
+                    </div>
+                    <button onclick="addRow()" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> إضافة صف
+                    </button>
+                </div>
+                
+                <div class="flex-1 table-container mb-4">
+                    <table class="grid-table" id="bulkTable">
+                        <thead id="bulkThead"></thead>
+                        <tbody id="gridBody"></tbody>
+                    </table>
+                </div>
+                
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="flex flex-wrap gap-4 items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-paper-plane text-blue-500"></i>
+                            <div>
+                                <p class="font-bold text-slate-700">وقت الإرسال</p>
+                                <p class="text-slate-500 text-sm">اختر وقت إرسال الرسائل للتليغرام</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <input type="datetime-local" id="sendTime" class="input-field" style="min-width: 200px;">
+                            <button onclick="submitBulk()" id="btnSubmitBulk" class="btn btn-primary px-6">
+                                <i class="fas fa-save"></i> حفظ وإرسال
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- بوابة الموارد البشرية -->
+            <div id="hrSection" class="hidden flex flex-col h-full p-4">
+                <div class="space-y-4 mb-4">
+                    <!-- تبويبات -->
+                    <div class="flex flex-wrap gap-2 bg-white p-2 rounded-xl border shadow-sm">
+                        <button onclick="showDashboard()" class="btn btn-secondary px-3">
+                            <i class="fas fa-home"></i>
+                        </button>
+                        <button onclick="switchHRTab('objections')" id="tabObj" class="tab-btn active">
+                            <i class="fas fa-gavel"></i> الاعتراضات
+                        </button>
+                        <button onclick="switchHRTab('monitoring')" id="tabMon" class="tab-btn">
+                            <i class="fas fa-eye"></i> المتابعة
+                        </button>
+                        <button onclick="switchHRTab('summary')" id="tabSummary" class="tab-btn">
+                            <i class="fas fa-chart-bar"></i> الخلاصة
+                        </button>
+                        <button onclick="switchHRTab('tracker')" id="tabTrack" class="tab-btn">
+                            <i class="fas fa-search"></i> بحث شامل
+                        </button>
+                    </div>
+                    
+                    <!-- شريط الإحصائيات -->
+                    <div id="statsContainer" class="hidden stats-bar"></div>
+                    
+                    <!-- الفلاتر -->
+                    <div id="monFilters" class="hidden bg-white p-4 rounded-xl border shadow-sm space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">من تاريخ</label>
+                                <input type="date" id="fDate1" class="input-field">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">إلى تاريخ</label>
+                                <input type="date" id="fDate2" class="input-field">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">التصنيف</label>
+                                <select id="fClass" class="input-field">
+                                    <option value="">جميع التصنيفات</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="loadMonitoringFiltered()" class="btn btn-primary">
+                            <i class="fas fa-filter"></i> تطبيق الفلتر
+                        </button>
+                    </div>
+                    
+                    <!-- فلاتر الخلاصة -->
+                    <div id="summaryFilters" class="hidden bg-white p-4 rounded-xl border shadow-sm space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">رقم البصمة</label>
+                                <input type="number" id="summaryFP" class="input-field" placeholder="أدخل البصمة">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">الشهر</label>
+                                <select id="summaryMonth" class="input-field">
+                                    <option value="">كل الأشهر</option>
+                                    <option value="1">يناير</option>
+                                    <option value="2">فبراير</option>
+                                    <option value="3">مارس</option>
+                                    <option value="4">أبريل</option>
+                                    <option value="5">مايو</option>
+                                    <option value="6">يونيو</option>
+                                    <option value="7">يوليو</option>
+                                    <option value="8">أغسطس</option>
+                                    <option value="9">سبتمبر</option>
+                                    <option value="10">أكتوبر</option>
+                                    <option value="11">نوفمبر</option>
+                                    <option value="12">ديسمبر</option>
+                                </select>
+                            </div>
+                            <div class="flex items-end">
+                                <button onclick="loadSummaryData()" class="btn btn-primary w-full">
+                                    <i class="fas fa-calculator"></i> حساب الخلاصة
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- البحث الشامل -->
+                    <div id="trackerInputDiv" class="hidden bg-white p-4 rounded-xl border shadow-sm">
+                        <div class="flex flex-col md:flex-row gap-4 items-center">
+                            <div class="flex-1">
+                                <label class="block text-sm font-bold text-slate-700 mb-2">رقم البصمة</label>
+                                <input type="number" id="trackFP" class="input-field" placeholder="أدخل رقم البصمة للبحث">
+                            </div>
+                            <button onclick="loadEmployeeTracker()" class="btn btn-primary px-8 h-fit">
+                                <i class="fas fa-search"></i> بحث شامل
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- جدول البيانات -->
+                <div class="flex-1 table-container">
+                    <table class="grid-table" id="activeTable">
+                        <thead id="activeThead"></thead>
+                        <tbody id="activeTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- الملف الشخصي -->
+            <div id="userHistorySection" class="hidden flex flex-col h-full p-4">
+                <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-xl border shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <button onclick="showDashboard()" class="btn btn-secondary">
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <div>
+                            <h2 class="font-bold text-xl text-slate-800" id="historyTitle">ملفي الشخصي</h2>
+                            <p class="text-slate-500 text-xs" id="profileDate"></p>
+                        </div>
+                    </div>
+                    <div class="text-slate-500 text-sm">
+                        <i class="fas fa-user-circle mr-2"></i>
+                        <span id="profileName"></span>
+                    </div>
+                </div>
+                
+                <div class="flex-1 table-container">
+                    <table class="grid-table" id="historyTable">
+                        <thead id="historyThead"></thead>
+                        <tbody id="historyTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- الإعدادات -->
+            <div id="settingsSection" class="hidden flex flex-col h-full p-4">
+                <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-xl border shadow-sm">
+                    <button onclick="showDashboard()" class="btn btn-secondary">
+                        <i class="fas fa-arrow-right"></i> الرجوع
+                    </button>
+                    <button onclick="openAddUserModal()" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> إضافة موظف
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <table class="grid-table" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>الرمز</th>
+                                <th>البصمة</th>
+                                <th>الاسم</th>
+                                <th>القسم</th>
+                                <th>الصلاحيات</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- زر الحفظ العائم -->
+            <div id="batchSaveBtn" class="hidden floating-save" onclick="saveBatchUpdates()">
+                <i class="fas fa-save"></i>
+                <span>حفظ التغييرات (<span id="batchCount">0</span>)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- النوافذ المنبثقة -->
+    <div id="uniModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden border border-slate-200">
+            <div class="p-6 border-b border-slate-200">
+                <h3 id="mTitle" class="font-bold text-xl text-slate-800">...</h3>
+            </div>
+            <div id="mContent" class="p-6 overflow-y-auto max-h-[60vh]"></div>
+            <div class="p-6 border-t border-slate-200 flex justify-end gap-3">
+                <button onclick="closeModal()" class="btn btn-secondary">إلغاء</button>
+                <button id="mBtn" class="btn btn-primary">تنفيذ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تعديل المعاملة -->
+    <div id="editModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-slate-200">
+            <div class="p-6 border-b border-slate-200">
+                <h3 class="font-bold text-xl text-slate-800">تعديل المعاملة</h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="editId">
+                <input type="hidden" id="editSheetType">
+                
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">النوع</label>
+                    <select id="editType" class="input-field">
+                        <option value="غرامة">غرامة</option>
+                        <option value="تنبيه">تنبيه</option>
+                        <option value="مكافأة">مكافأة</option>
+                        <option value="بشاشة">بشاشة</option>
+                        <option value="نسبة">نسبة</option>
+                        <option value="نقاط">نقاط</option>
+                        <option value="تخفيض">تخفيض</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">المبلغ</label>
+                    <input type="number" id="editAmount" class="input-field" placeholder="0">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">السبب</label>
+                    <textarea id="editReason" class="input-field h-32 resize-none" placeholder="سبب التعديل"></textarea>
+                </div>
+            </div>
+            <div class="p-6 border-t border-slate-200 flex justify-end gap-3">
+                <button onclick="closeEditModal()" class="btn btn-secondary">إلغاء</button>
+                <button onclick="saveEditTransaction()" class="btn btn-primary">حفظ التعديل</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- رسائل التنبيه -->
+    <div id="toast" class="hidden toast">
+        <i id="toastIcon" class="fas fa-info-circle text-blue-400"></i>
+        <span id="tMsg" class="font-bold"></span>
+    </div>
+
+    <script>
+        // رابط API
+        const API_URL = "https://script.google.com/macros/s/AKfycbxZ36zIjslCa2Kc9KXpCVvmEBoJOH_MKzLV4-hDxh12jCXMCFq7hhXUGwPWTOzFc2Um1w/exec";
+        
+        // متغيرات النظام
+        let currentUser = null;
+        let currentMode = 'fine';
+        let detailsData = { mapping: {}, groups: [], followGroups: [] };
+        let batchUpdates = [];
+        let selectedRows = new Set();
+
+        // ================ إدارة الجلسة ================
+        window.addEventListener('load', () => {
+            const savedUser = localStorage.getItem('hrUserV32');
+            if(savedUser) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                    initApp();
+                } catch(e) {
+                    localStorage.removeItem('hrUserV32');
+                }
+            }
+        });
+
+        async function performLogin() {
+            const code = document.getElementById('loginCode').value.trim();
+            const fp = document.getElementById('loginFP').value.trim();
+            
+            if(!code || !fp) {
+                showToast("يرجى إدخال جميع البيانات", "error");
+                return;
+            }
+            
+            const btn = document.getElementById('btnLogin');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<span class="loader"></span> جاري التحقق...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        action: "login", 
+                        code: code, 
+                        fp: fp 
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if(data.result === "success") {
+                    currentUser = data.data;
+                    currentUser.code = code;
+                    currentUser.fp = fp;
+                    localStorage.setItem('hrUserV32', JSON.stringify(currentUser));
+                    initApp();
+                    showToast("تم تسجيل الدخول بنجاح", "success");
+                } else {
+                    document.getElementById('loginMsg').textContent = data.message;
+                    showToast(data.message, "error");
+                }
+            } catch(error) {
+                showToast("خطأ في الاتصال بالسيرفر", "error");
+            }
+            
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        }
+
+        async function initApp() {
+            document.getElementById('headerSubtitle').innerHTML = 
+                `${currentUser.name} | ${currentUser.section}`;
+            
+            document.getElementById('logoutBtn').classList.remove('hidden');
+            setupPermissions();
+            await loadDetails();
+            
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+        }
+
+        function logout() {
+            if(confirm("هل تريد تسجيل الخروج؟")) {
+                localStorage.removeItem('hrUserV32');
+                location.reload();
+            }
+        }
+
+        function setupPermissions() {
+            const permissions = currentUser.perms;
+            
+            if(permissions.fine) {
+                document.getElementById('btnFine').classList.remove('hidden');
+                document.getElementById('btnReduction').classList.remove('hidden');
+            }
+            if(permissions.bonus) {
+                document.getElementById('btnBonus').classList.remove('hidden');
+            }
+            if(permissions.ratio) {
+                document.getElementById('btnRatio').classList.remove('hidden');
+                document.getElementById('btnPoints').classList.remove('hidden');
+            }
+            if(permissions.hr) {
+                document.getElementById('btnHR').classList.remove('hidden');
+            }
+            if(permissions.admin) {
+                document.getElementById('btnAdmin').classList.remove('hidden');
+            }
+        }
+
+        async function loadDetails() {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "get_details" })
+                });
+                
+                const data = await response.json();
+                if(data.result === "success") {
+                    detailsData = data.data;
+                }
+            } catch(error) {
+                console.error("Error loading details:", error);
+            }
+        }
+
+        // ================ الإضافة المتعددة ================
+        function openBulkForm(mode) {
+            currentMode = mode;
+            hideAllSections();
+            document.getElementById('bulkSection').classList.remove('hidden');
+            
+            const titles = {
+                'fine': 'إضافة غرامات',
+                'bonus': 'إضافة مكافآت',
+                'ratio': 'إضافة نسب',
+                'points': 'إضافة نقاط',
+                'reduction': 'إضافة تخفيضات'
+            };
+            
+            document.getElementById('bulkTitle').textContent = titles[mode];
+            setupBulkTable();
+            
+            // تعيين وقت الإرسال الحالي
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('sendTime').value = now.toISOString().slice(0, 16);
+        }
+
+        function setupBulkTable() {
+            const thead = document.getElementById('bulkThead');
+            const tbody = document.getElementById('gridBody');
+            
+            let headers = `
+                <tr>
+                    <th style="width: 50px">#</th>
+                    <th style="width: 120px">البصمة</th>
+                    <th>الاسم</th>
+                    <th style="width: 120px">النوع</th>
+                    <th style="width: 120px">${currentMode === 'ratio' ? 'النسبة %' : currentMode === 'points' ? 'النقاط' : 'المبلغ'}</th>
+                    <th>السبب</th>
+                    ${currentMode === 'fine' || currentMode === 'reduction' ? 
+                        '<th style="width: 120px">التصنيف</th>' : ''}
+                    <th style="width: 150px">الجروب</th>
+                    <th style="width: 150px">الاستحقاق</th>
+                    <th style="width: 80px">حذف</th>
+                </tr>
+            `;
+            
+            thead.innerHTML = headers;
+            tbody.innerHTML = '';
+            
+            addRow();
+        }
+
+        function addRow() {
+            const tbody = document.getElementById('gridBody');
+            const rowIndex = tbody.children.length + 1;
+            
+            let typeOptions = '';
+            let amountPlaceholder = '';
+            
+            switch(currentMode) {
+                case 'fine':
+                    typeOptions = `
+                        <option value="غرامة">غرامة</option>
+                        <option value="تنبيه">تنبيه</option>
+                    `;
+                    amountPlaceholder = "1000";
+                    break;
+                case 'bonus':
+                    typeOptions = `
+                        <option value="مكافأة">مكافأة</option>
+                        <option value="بشاشة">بشاشة</option>
+                    `;
+                    amountPlaceholder = "0";
+                    break;
+                case 'ratio':
+                    typeOptions = `<option value="نسبة">نسبة</option>`;
+                    amountPlaceholder = "0";
+                    break;
+                case 'points':
+                    typeOptions = `
+                        <option value="إضافة نقاط">إضافة نقاط</option>
+                        <option value="خصم نقاط">خصم نقاط</option>
+                    `;
+                    amountPlaceholder = "0";
+                    break;
+                case 'reduction':
+                    typeOptions = `<option value="تخفيض">تخفيض</option>`;
+                    amountPlaceholder = "0";
+                    break;
+            }
+            
+            let groupOptions = '<option value="">اختر الجروب</option>';
+            const targetType = currentMode === 'fine' ? 'غرامة' : 
+                             currentMode === 'bonus' ? 'مكافأة' : 
+                             currentMode === 'ratio' ? 'نسب' : 
+                             currentMode === 'points' ? 'نقاط' : 'تخفيض';
+            
+            detailsData.groups.forEach(group => {
+                if(group.type === targetType) {
+                    groupOptions += `<option value="${group.id}">${group.name}</option>`;
+                }
+            });
+            
+            let classificationField = '';
+            if(currentMode === 'fine' || currentMode === 'reduction') {
+                let classificationOptions = '<option value="">اختر التصنيف</option>';
+                Object.keys(detailsData.mapping).forEach(gen => {
+                    classificationOptions += `<option value="${gen}">${gen}</option>`;
+                });
+                
+                classificationField = `
+                    <td>
+                        <select class="input-field classification-input" onchange="updateSpecialClassifications(this)">
+                            ${classificationOptions}
+                        </select>
+                    </td>
+                `;
+            }
+            
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            const dueDate = now.toISOString().slice(0, 16);
+            
+            const row = `
+                <tr data-id="${Date.now()}-${rowIndex}">
+                    <td class="text-slate-500">${rowIndex}</td>
+                    <td>
+                        <input type="number" class="input-field fp-input" placeholder="رقم البصمة" onchange="fetchEmployeeName(this)">
+                    </td>
+                    <td>
+                        <input type="text" class="input-field name-input" readonly placeholder="سيظهر بعد إدخال البصمة">
+                    </td>
+                    <td>
+                        <select class="input-field type-input">
+                            ${typeOptions}
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" class="input-field amount-input" placeholder="${amountPlaceholder}" 
+                               ${currentMode === 'fine' ? 'min="1000"' : ''}>
+                    </td>
+                    <td>
+                        <input type="text" class="input-field reason-input" placeholder="سبب الإضافة">
+                    </td>
+                    ${classificationField}
+                    <td>
+                        <select class="input-field group-input">
+                            ${groupOptions}
+                        </select>
+                    </td>
+                    <td>
+                        <input type="datetime-local" class="input-field due-input" value="${dueDate}">
+                    </td>
+                    <td>
+                        <button onclick="deleteRow(this)" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+            
+            tbody.insertAdjacentHTML('beforeend', row);
+        }
+
+        function deleteRow(button) {
+            const row = button.closest('tr');
+            row.remove();
+            
+            // تحديث أرقام الصفوف
+            const rows = document.querySelectorAll('#gridBody tr');
+            rows.forEach((row, index) => {
+                row.cells[0].textContent = index + 1;
+            });
+        }
+
+        function updateSpecialClassifications(select) {
+            const row = select.closest('tr');
+            const specialSelect = row.querySelector('.special-class-input');
+            
+            if(specialSelect) {
+                specialSelect.remove();
+            }
+            
+            const generalClass = select.value;
+            if(generalClass && detailsData.mapping[generalClass]) {
+                let options = '<option value="">اختر التصنيف الخاص</option>';
+                detailsData.mapping[generalClass].forEach(special => {
+                    options += `<option value="${special}">${special}</option>`;
+                });
+                
+                const specialField = `
+                    <select class="input-field special-class-input">
+                        ${options}
+                    </select>
+                `;
+                
+                select.insertAdjacentHTML('afterend', specialField);
+            }
+        }
+
+        async function fetchEmployeeName(input) {
+            const fp = input.value.trim();
+            if(!fp) return;
+            
+            const row = input.closest('tr');
+            const nameInput = row.querySelector('.name-input');
+            nameInput.value = "جاري البحث...";
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        action: "get_emp_info", 
+                        fp: fp 
+                    })
+                });
+                
+                const data = await response.json();
+                if(data.result === "success") {
+                    nameInput.value = data.data.name;
+                    row.dataset.section = data.data.section;
+                } else {
+                    nameInput.value = "غير موجود";
+                    nameInput.classList.add('text-red-500');
+                }
+            } catch(error) {
+                nameInput.value = "خطأ في الاتصال";
+                nameInput.classList.add('text-red-500');
+            }
+        }
+
+        async function submitBulk() {
+            const rows = document.querySelectorAll('#gridBody tr');
+            if(rows.length === 0) {
+                showToast("لا توجد بيانات للحفظ", "error");
+                return;
+            }
+            
+            const sendTime = document.getElementById('sendTime').value;
+            if(!sendTime) {
+                showToast("يرجى تحديد وقت الإرسال", "error");
+                return;
+            }
+            
+            const dataRows = [];
+            let hasErrors = false;
+            
+            for(const row of rows) {
+                const fp = row.querySelector('.fp-input').value.trim();
+                const name = row.querySelector('.name-input').value.trim();
+                const type = row.querySelector('.type-input').value;
+                const amount = parseFloat(row.querySelector('.amount-input').value) || 0;
+                const reason = row.querySelector('.reason-input').value.trim();
+                const group = row.querySelector('.group-input').value;
+                const dueDate = row.querySelector('.due-input').value;
+                
+                // التحقق من البيانات
+                if(!fp || !name || name === "غير موجود" || !reason || !group) {
+                    showToast("هناك بيانات ناقصة في أحد الصفوف", "error");
+                    hasErrors = true;
+                    break;
+                }
+                
+                if(currentMode === 'fine' && type === 'غرامة' && amount < 1000) {
+                    showToast("الغرامة يجب أن تكون 1000 دينار أو أكثر", "error");
+                    hasErrors = true;
+                    break;
+                }
+                
+                const rowData = {
+                    fp: fp,
+                    name: name,
+                    section: row.dataset.section || "",
+                    type: type,
+                    amount: amount,
+                    reason: reason,
+                    groupID: group,
+                    dueDate: dueDate,
+                    sendTime: sendTime
+                };
+                
+                if(currentMode === 'fine' || currentMode === 'reduction') {
+                    const genClass = row.querySelector('.classification-input')?.value || "";
+                    const speClass = row.querySelector('.special-class-input')?.value || "";
+                    rowData.genClass = genClass;
+                    rowData.speClass = speClass;
+                }
+                
+                dataRows.push(rowData);
+            }
+            
+            if(hasErrors) return;
+            
+            const btn = document.getElementById('btnSubmitBulk');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<span class="loader"></span> جاري الحفظ...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "save_bulk",
+                        mode: currentMode,
+                        rows: dataRows,
+                        addedBy: currentUser.name
+                    })
+                });
+                
+                const data = await response.json();
+                if(data.result === "success") {
+                    showToast(`تم حفظ ${dataRows.length} معاملة بنجاح`, "success");
+                    
+                    // إعادة تعيين النموذج
+                    document.getElementById('gridBody').innerHTML = '';
+                    addRow();
+                    
+                    // تحديث وقت الإرسال
+                    const now = new Date();
+                    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                    document.getElementById('sendTime').value = now.toISOString().slice(0, 16);
+                } else {
+                    showToast("حدث خطأ في الحفظ", "error");
+                }
+            } catch(error) {
+                showToast("خطأ في الاتصال بالسيرفر", "error");
+            }
+            
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        }
+
+        // ================ بوابة الموارد البشرية ================
+        function openHRPortal() {
+            hideAllSections();
+            document.getElementById('hrSection').classList.remove('hidden');
+            switchHRTab('objections');
+        }
+
+        function switchHRTab(tab) {
+            // إزالة النشاط من جميع التبويبات
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // إخفاء جميع الفلاتر
+            document.getElementById('monFilters').classList.add('hidden');
+            document.getElementById('summaryFilters').classList.add('hidden');
+            document.getElementById('trackerInputDiv').classList.add('hidden');
+            document.getElementById('statsContainer').classList.add('hidden');
+            
+            // إظهار التبويب النشط
+            document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+            
+            // إعداد الجدول
+            const thead = document.getElementById('activeThead');
+            const tbody = document.getElementById('activeTbody');
+            tbody.innerHTML = '<tr><td colspan="10" class="text-center p-8 text-slate-500">جاري تحميل البيانات...</td></tr>';
+            
+            switch(tab) {
+                case 'objections':
+                    thead.innerHTML = `
+                        <tr>
+                            <th>الموظف</th>
+                            <th>النوع</th>
+                            <th>المبلغ</th>
+                            <th>السبب</th>
+                            <th>الاعتراض</th>
+                            <th>التاريخ</th>
+                            <th>الحالة</th>
+                            <th>الإجراء</th>
+                        </tr>
+                    `;
+                    document.getElementById('statsContainer').classList.remove('hidden');
+                    loadObjections();
+                    break;
+                    
+                case 'monitoring':
+                    thead.innerHTML = `
+                        <tr>
+                            <th style="width: 40px">
+                                <input type="checkbox" onclick="toggleAllRows(this)">
+                            </th>
+                            <th>الموظف</th>
+                            <th>النوع</th>
+                            <th>المبلغ</th>
+                            <th>السبب</th>
+                            <th>التاريخ</th>
+                            <th>المرسل</th>
+                            <th>الحالة</th>
+                            <th style="width: 80px">تعديل</th>
+                            <th style="width: 80px">حذف</th>
+                        </tr>
+                    `;
+                    document.getElementById('monFilters').classList.remove('hidden');
+                    document.getElementById('statsContainer').classList.remove('hidden');
+                    loadMonitoring();
+                    break;
+                    
+                case 'summary':
+                    thead.innerHTML = `
+                        <tr>
+                            <th>الموظف</th>
+                            <th>الغرامات</th>
+                            <th>المكافآت</th>
+                            <th>النسب</th>
+                            <th>النقاط</th>
+                            <th>التخفيضات</th>
+                            <th>الصافي</th>
+                        </tr>
+                    `;
+                    document.getElementById('summaryFilters').classList.remove('hidden');
+                    break;
+                    
+                case 'tracker':
+                    thead.innerHTML = `
+                        <tr>
+                            <th>النوع</th>
+                            <th>التفاصيل</th>
+                            <th>المبلغ/النقاط</th>
+                            <th>السبب</th>
+                            <th>التاريخ</th>
+                        </tr>
+                    `;
+                    document.getElementById('trackerInputDiv').classList.remove('hidden');
+                    break;
+            }
+            
+            // إعادة تعيين التحديدات
+            selectedRows.clear();
+            updateBatchButton();
+        }
+
+        function toggleAllRows(checkbox) {
+            const checkboxes = document.querySelectorAll('#activeTbody .row-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = checkbox.checked;
+                if(checkbox.checked) {
+                    selectedRows.add(cb.value);
+                } else {
+                    selectedRows.delete(cb.value);
+                }
+            });
+            updateBatchButton();
+        }
+
+        function toggleRowSelection(checkbox) {
+            if(checkbox.checked) {
+                selectedRows.add(checkbox.value);
+            } else {
+                selectedRows.delete(checkbox.value);
+            }
+            updateBatchButton();
+        }
+
+        function updateBatchButton() {
+            const btn = document.getElementById('batchSaveBtn');
+            const count = document.getElementById('batchCount');
+            
+            count.textContent = selectedRows.size;
+            
+            if(selectedRows.size > 0) {
+                btn.classList.remove('hidden');
+            } else {
+                btn.classList.add('hidden');
+            }
+        }
+
+        async function loadObjections() {
+            const tbody = document.getElementById('activeTbody');
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center p-8"><span class="loader"></span> جاري تحميل الاعتراضات...</td></tr>';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "get_hr_monitoring_filtered",
+                        isObjectionOnly: true
+                    })
+                });
+                
+                const data = await response.json();
+                if(data.result === "success") {
+                    renderObjectionsTable(data.data);
+                    updateStatsBar(data.stats);
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center p-8 text-red-500">حدث خطأ في تحميل البيانات</td></tr>';
+                }
+            } catch(error) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center p-8 text-red-500">خطأ في الاتصال</td></tr>';
+            }
+        }
+
+        function renderObjectionsTable(data) {
+            const tbody = document.getElementById('activeTbody');
+            
+            if(!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center p-8 text-slate-500">لا توجد اعتراضات</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            data.forEach(item => {
+                const typeClass = getTypeClass(item.type);
+                const statusClass = getStatusClass(item.objStatus);
+                
+                html += `
+                    <tr>
+                        <td class="text-right">
+                            <div class="font-bold">${item.name}</div>
+                            <div class="text-xs text-slate-500">${item.fp}</div>
+                        </td>
+                        <td>
+                            <span class="px-2 py-1 rounded text-xs ${typeClass}">${item.type}</span>
+                        </td>
+                        <td class="font-bold">${formatNumber(item.amount)}</td>
+                        <td class="text-right text-sm max-w-xs truncate">${item.reason}</td>
+                        <td class="text-right text-sm max-w-xs truncate">
+                            ${item.objReason || 'لا يوجد'}
+                            ${item.objImg ? '<br><a href="' + item.objImg + '" target="_blank" class="text-blue-500 text-xs">عرض الصورة</a>' : ''}
+                        </td>
+                        <td class="text-xs text-slate-500">
+                            ${item.entryDate}<br>
+                            ${item.dueDate ? 'مستحق: ' + item.dueDate : ''}
+                        </td>
+                        <td>
+                            <span class="px-2 py-1 rounded text-xs ${statusClass}">${item.objStatus}</span>
+                        </td>
+                        <td>
+                            <button onclick="openHRActionModal('${item.id}', '${item.sheetType}')" class="btn btn-primary text-xs px-3 py-1">
+                                <i class="fas fa-gavel"></i> قرار
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        async function loadMonitoring() {
+            const tbody = document.getElementById('activeTbody');
+            tbody.innerHTML = '<tr><td colspan="10" class="text-center p-8"><span class="loader"></span> جاري تحميل البيانات...</td></tr>';
+            
+            const dateFrom = document.getElementById('fDate1').value;
+            const dateTo = document.getElementById('fDate2').value;
+            const speClass = document.getElementById('fClass').value;
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "get_hr_monitoring_filtered",
+                        dateFrom: dateFrom,
+                        dateTo: dateTo,
+                        speClass: speClass,
+                        isObjectionOnly: false
+                    })
+                });
+                
+                const data = await response.json();
+                if(data.result === "success") {
+                    renderMonitoringTable(data.data);
+                    updateStatsBar(data.stats);
+                    updateClassificationFilter(data.stats?.specialClasses || {});
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="10" class="text-center p-8 text-red-500">حدث خطأ في تحميل البيانات</td></tr>';
+                }
+            } catch(error) {
+                tbody.innerHTML = '<tr><td colspan="10" class="text-center p-8 text-red-500">خطأ في الاتصال</td></tr>';
+            }
+        }
+
+        function renderMonitoringTable(data) {
+            const tbody = document.getElementById('activeTbody');
+            
+            if(!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" class="text-center p-8 text-slate-500">لا توجد بيانات</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            data.forEach(item => {
+                const typeClass = getTypeClass(item.type);
+                const statusClass = getStatusClass(item.objStatus);
+                const isChecked = item.isFollowed === 'نعم';
+                
+                html += `
+                    <tr>
+                        <td>
+                            ${isChecked ? 
+                                '<i class="fas fa-check-circle text-green-500"></i>' : 
+                                `<input type="checkbox" class="row-checkbox" value="${item.id}|${item.sheetType}" onchange="toggleRowSelection(this)" ${selectedRows.has(item.id + '|' + item.sheetType) ? 'checked' : ''}>`
+                            }
+                        </td>
+                        <td class="text-right">
+                            <div class="font-bold">${item.name}</div>
+                            <div class="text-xs text-slate-500">${item.fp}</div>
+                        </td>
+                        <td>
+                            <span class="px-2 py-1 rounded text-xs ${typeClass}">${item.type}</span>
+                        </td>
+                        <td class="font-bold">${formatNumber(item.amount)}</td>
+                        <td class="text-right text-sm">
+                            ${item.reason}
+                            ${item.speClass ? `<br><span class="text-xs bg-slate-100 px-2 py-0.5 rounded">${item.speClass}</span>` : ''}
+                        </td>
+                        <td class="text-xs text-slate-500">
+                            ${item.entryDate}<br>
+                            ${item.dueDate ? 'مستحق: ' + item.dueDate : ''}
+                        </td>
+                        <td class="text-xs">${item.sender}</td>
+                        <td>
+                            <span class="px-2 py-1 rounded text-xs ${statusClass}">${item.objStatus}</span>
+                        </td>
+                        <td>
+                            <button onclick="openEditModal('${item.id}', '${item.sheetType}', '${item.type}', '${item.amount}', '${item.reason}')" 
+                                    class="text-blue-500 hover:text-blue-700">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                        <td>
+                            <button onclick="deleteHRTransaction('${item.id}', '${item.sheetType}')" 
+                                    class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        async function loadMonitoringFiltered() {
+            await loadMonitoring();
+        }
+
+        function updateClassificationFilter(classes) {
+            const select = document.getElementById('fClass');
+            let options = '<option value="">جميع التصنيفات</option>';
+            
+            for(const [className, count] of Object.entries(classes)) {
+                options += `<option value="${className}">${className} (${count})</option>`;
+            }
+            
+            select.innerHTML = options;
+        }
+
+        function updateStatsBar(stats) {
+            const container = document.getElementById('statsContainer');
+            
+            if(!stats) {
+                container.classList.add('hidden');
+                return;
+            }
+            
+            container.classList.remove('hidden');
+            container.innerHTML = `
+                <div class="stat-item">
+                    <i class="fas fa-list text-slate-600"></i>
+                    <span>المجموع: ${stats.total || 0}</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-clock text-amber-500"></i>
+                    <span>قيد المراجعة: ${stats.pending || 0}</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-check-circle text-green-500"></i>
+                    <span>مقبول: ${stats.accepted || 0}</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-times-circle text-red-500"></i>
+                    <span>مرفوض: ${stats.rejected || 0}</span>
+                </div>
+            `;
+        }
+
+        // ================ الخلاصة النهائية ================
+        async function loadSummaryData() {
+            const fp = document.getElementById('summaryFP').value;
+            const month = document.getElementById('summaryMonth').value;
+            
+            if(!fp && currentUser.fp) {
+                document.getElementById('summaryFP').value = currentUser.fp;
+            }
+            
+            const tbody = document.getElementById('activeTbody');
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8"><span class="loader"></span> جاري حساب الخلاصة...</td></tr>';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "get_employee_summary",
+                        fp: fp || currentUser.fp,
+                        month: month
+                    })
+                });
+                
+                const data = await response.json();
+                if(data.result === "success") {
+                    renderSummaryTable(data.data);
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-red-500">${data.message}</td></tr>`;
+                }
+            } catch(error) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-red-500">خطأ في الاتصال</td></tr>';
+            }
+        }
+
+        function renderSummaryTable(data) {
+            const tbody = document.getElementById('activeTbody');
+            
+            if(!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-slate-500">لا توجد بيانات</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            data.forEach(item => {
+                const netTotal = item.totalBonuses + item.totalRatios - item.totalFines + item.totalReductions;
+                const netClass = netTotal >= 0 ? 'text-green-600' : 'text-red-600';
+                
+                html += `
+                    <tr>
+                        <td class="text-right">
+                            <div class="font-bold">${item.name}</div>
+                            <div class="text-xs text-slate-500">${item.fp} | ${item.section}</div>
+                        </td>
+                        <td class="font-bold text-red-600">${formatNumber(item.totalFines)}</td>
+                        <td class="font-bold text-green-600">${formatNumber(item.totalBonuses)}</td>
+                        <td class="font-bold text-purple-600">${formatNumber(item.totalRatios)}</td>
+                        <td class="font-bold text-orange-600">${item.totalPoints}</td>
+                        <td class="font-bold text-blue-600">${formatNumber(item.totalReductions)}</td>
+                        <td class="font-bold text-lg ${netClass}">${formatNumber(netTotal)}</td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        // ================ البحث الشامل ================
+        async function loadEmployeeTracker() {
+            const fp = document.getElementById('trackFP').value;
+            
+            if(!fp) {
+                showToast("يرجى إدخال رقم البصمة", "error");
+                return;
+            }
+            
+            const tbody = document.getElementById('activeTbody');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8"><span class="loader"></span> جاري البحث...</td></tr>';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "get_emp_full_profile",
+                        searchFP: fp
+                    })
+                });
+                
+                const data = await response.json();
+                if(data.result === "success") {
+                    renderTrackerTable(data.data);
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-red-500">${data.message}</td></tr>`;
+                }
+            } catch(error) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-500">خطأ في الاتصال</td></tr>';
+            }
+        }
+
+        function renderTrackerTable(data) {
+            const tbody = document.getElementById('activeTbody');
+            
+            if(!data || !data.transactions || data.transactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-500">لا توجد معاملات</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            
+            // عرض بيانات الدوام إن وجدت
+            if(data.attendance && data.attendance.length > 0) {
+                html += `
+                    <tr>
+                        <td colspan="5" class="bg-blue-50 text-blue-800 font-bold p-4">
+                            <i class="fas fa-clock mr-2"></i>
+                            سجل الدوام (${data.attendance.length} يوم)
+                        </td>
+                    </tr>
+                `;
+            }
+            
+            // عرض المعاملات
+            data.transactions.forEach(item => {
+                const typeClass = getTypeClass(item.type);
+                
+                html += `
+                    <tr>
+                        <td>
+                            <span class="px-3 py-1.5 rounded-full text-xs font-bold ${typeClass}">
+                                ${item.type}
+                            </span>
+                        </td>
+                        <td class="text-right text-sm">
+                            ${item.reason || 'لا يوجد'}
+                        </td>
+                        <td class="font-bold">${formatNumber(item.amount)}</td>
+                        <td class="text-xs text-slate-500 max-w-xs truncate">
+                            ${item.reason || 'لا يوجد'}
+                        </td>
+                        <td class="text-xs text-slate-500">${item.date}</td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        // ================ الملف الشخصي ================
+        async function openMyReceived() {
+            hideAllSections();
+            document.getElementById('userHistorySection').classList.remove('hidden');
+            
+            document.getElementById('historyTitle').textContent = "ملفي الشخصي";
+            document.getElementById('profileName').textContent = currentUser.name;
+            
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('profileDate').textContent = now.toLocaleDateString('ar-EG', options);
+            
+            await loadMyProfileData();
+        }
+
+        async function loadMyProfileData() {
+            const thead = document.getElementById('historyThead');
+            const tbody = document.getElementById('historyTbody');
+            
+            thead.innerHTML = `
+                <tr>
+                    <th>النوع</th>
+                    <th>المبلغ/النقاط</th>
+                    <th>السبب</th>
+                    <th>التاريخ</th>
+                    <th>الحالة</th>
+                    <th>الإجراء</th>
+                </tr>
+            `;
+            
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8"><span class="loader"></span> جاري تحميل البيانات...</td></tr>';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "get_my_received",
+                        fp: currentUser.fp
+                    })
+                });
+                
+                const data = await response.json();
+                if(data.result === "success") {
+                    renderProfileTable(data.data);
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-red-500">حدث خطأ في تحميل البيانات</td></tr>';
+                }
+            } catch(error) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-red-500">خطأ في الاتصال</td></tr>';
+            }
+        }
+
+        function renderProfileTable(data) {
+            const tbody = document.getElementById('historyTbody');
+            
+            if(!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-500">لا توجد معاملات</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            data.forEach(item => {
+                const typeClass = getTypeClass(item.type);
+                const statusClass = getStatusClass(item.objStatus);
+                const canObject = !item.objStatus || item.objStatus === "لا يوجد";
+                
+                html += `
+                    <tr>
+                        <td>
+                            <span class="px-3 py-1.5 rounded-full text-xs font-bold ${typeClass}">
+                                ${item.type}
+                            </span>
+                        </td>
+                        <td class="font-bold">${formatNumber(item.amount)}</td>
+                        <td class="text-right text-sm max-w-xs truncate">${item.reason}</td>
+                        <td class="text-xs text-slate-500">${item.date}</td>
+                        <td>
+                            <span class="px-2 py-1 rounded text-xs ${statusClass}">${item.objStatus || 'لا يوجد'}</span>
+                        </td>
+                        <td>
+                            ${canObject ? 
+                                `<button onclick="openObjectionModal('${item.id}', '${item.sheetType}')" class="btn btn-primary text-xs px-3 py-1">
+                                    <i class="fas fa-exclamation-circle"></i> اعتراض
+                                </button>` :
+                                '<span class="text-slate-500 text-xs">تم الاعتراض</span>'
+                            }
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        async function openMyAdded() {
+            hideAllSections();
+            document.getElementById('userHistorySection').classList.remove('hidden');
+            
+            document.getElementById('historyTitle').textContent = "سجل إضافاتي";
+            document.getElementById('profileName').textContent = currentUser.name;
+            
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('profileDate').textContent = now.toLocaleDateString('ar-EG', options);
+            
+            await loadMyAddedData();
+        }
+
+        async function loadMyAddedData() {
+            const thead = document.getElementById('historyThead');
+            const tbody = document.getElementById('historyTbody');
+            
+            thead.innerHTML = `
+                <tr>
+                    <th>الموظف</th>
+                    <th>النوع</th>
+                    <th>المبلغ/النقاط</th>
+                    <th>السبب</th>
+                    <th>التاريخ</th>
+                </tr>
+            `;
+            
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8"><span class="loader"></span> جاري تحميل البيانات...</td></tr>';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "get_my_added",
+                        userName: currentUser.name
+                    })
+                });
+                
+                const data = await response.json();
+                if(data.result === "success") {
+                    renderAddedTable(data.data);
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-500">حدث خطأ في تحميل البيانات</td></tr>';
+                }
+            } catch(error) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-500">خطأ في الاتصال</td></tr>';
+            }
+        }
+
+        function renderAddedTable(data) {
+            const tbody = document.getElementById('historyTbody');
+            
+            if(!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-500">لا توجد إضافات</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            data.forEach(item => {
+                const typeClass = getTypeClass(item.type);
+                
+                html += `
+                    <tr>
+                        <td class="text-right">
+                            <div class="font-bold">${item.name}</div>
+                            <div class="text-xs text-slate-500">${item.fp}</div>
+                        </td>
+                        <td>
+                            <span class="px-2 py-1 rounded text-xs ${typeClass}">${item.type}</span>
+                        </td>
+                        <td class="font-bold">${formatNumber(item.amount)}</td>
+                        <td class="text-right text-sm">${item.reason}</td>
+                        <td class="text-xs text-slate-500">${item.date}</td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        // ================ الإعدادات ================
+        function openSettings() {
+            hideAllSections();
+            document.getElementById('settingsSection').classList.remove('hidden');
+            loadUsersList();
+        }
+
+        async function loadUsersList() {
+            const tbody = document.getElementById('usersBody');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8"><span class="loader"></span> جاري تحميل المستخدمين...</td></tr>';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "manage_users",
+                        subAction: "get_all"
+                    })
+                });
+                
+                const data = await response.json();
+                if(data.result === "success") {
+                    renderUsersTable(data.data);
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-red-500">حدث خطأ في تحميل البيانات</td></tr>';
+                }
+            } catch(error) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-red-500">خطأ في الاتصال</td></tr>';
+            }
+        }
+
+        function renderUsersTable(users) {
+            const tbody = document.getElementById('usersBody');
+            
+            if(!users || users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-slate-500">لا توجد بيانات</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            users.forEach(user => {
+                const permissions = [];
+                if(user.pFine === 'نعم') permissions.push('غرامات');
+                if(user.pBonus === 'نعم') permissions.push('مكافآت');
+                if(user.pRatio === 'نعم') permissions.push('نسب');
+                if(user.pHR === 'نعم') permissions.push('HR');
+                if(user.pAdmin === 'نعم') permissions.push('Admin');
+                
+                html += `
+                    <tr>
+                        <td>${user.code}</td>
+                        <td>${user.fp}</td>
+                        <td class="text-right font-bold">${user.name}</td>
+                        <td>${user.sec}</td>
+                        <td class="text-xs">
+                            <div class="flex flex-wrap gap-1">
+                                ${permissions.map(p => `<span class="bg-slate-100 px-2 py-0.5 rounded">${p}</span>`).join('')}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="flex gap-2 justify-center">
+                                <button onclick="editUserPermissions('${user.code}', '${user.name}', ${JSON.stringify(user)})" 
+                                        class="text-blue-500 hover:text-blue-700" title="تعديل الصلاحيات">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteUser('${user.row}')" 
+                                        class="text-red-500 hover:text-red-700" title="حذف">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        function openAddUserModal() {
+            const content = `
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">الرمز الوظيفي</label>
+                        <input type="text" id="newUserCode" class="input-field" placeholder="مثال: E001">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">رقم البصمة</label>
+                        <input type="number" id="newUserFP" class="input-field" placeholder="رقم البصمة">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">الاسم الكامل</label>
+                        <input type="text" id="newUserName" class="input-field" placeholder="اسم الموظف">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">القسم</label>
+                        <input type="text" id="newUserSection" class="input-field" placeholder="القسم">
+                    </div>
+                    
+                    <div class="border-t pt-4">
+                        <h4 class="font-bold text-slate-700 mb-3">الصلاحيات:</h4>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="permFine" class="w-4 h-4">
+                                <span class="text-sm">غرامات</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="permBonus" class="w-4 h-4">
+                                <span class="text-sm">مكافآت</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="permRatio" class="w-4 h-4">
+                                <span class="text-sm">نسب ونقاط</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="permHR" class="w-4 h-4">
+                                <span class="text-sm">موارد بشرية</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="permAdmin" class="w-4 h-4">
+                                <span class="text-sm">مدير النظام</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            showModal("إضافة موظف جديد", content, async () => {
+                const userData = {
+                    code: document.getElementById('newUserCode').value,
+                    fp: document.getElementById('newUserFP').value,
+                    name: document.getElementById('newUserName').value,
+                    sec: document.getElementById('newUserSection').value,
+                    pFine: document.getElementById('permFine').checked ? 'نعم' : 'لا',
+                    pBonus: document.getElementById('permBonus').checked ? 'نعم' : 'لا',
+                    pRatio: document.getElementById('permRatio').checked ? 'نعم' : 'لا',
+                    pHR: document.getElementById('permHR').checked ? 'نعم' : 'لا',
+                    pAdmin: document.getElementById('permAdmin').checked ? 'نعم' : 'لا'
+                };
+                
+                // التحقق من البيانات
+                if(!userData.code || !userData.fp || !userData.name || !userData.sec) {
+                    showToast("يرجى ملء جميع الحقول", "error");
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: "manage_users",
+                            subAction: "add",
+                            userData: userData
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    if(data.result === "success") {
+                        showToast("تم إضافة الموظف بنجاح", "success");
+                        closeModal();
+                        loadUsersList();
+                    } else {
+                        showToast(data.message, "error");
+                    }
+                } catch(error) {
+                    showToast("خطأ في الاتصال", "error");
+                }
+            });
+        }
+
+        function editUserPermissions(code, name, userData) {
+            const content = `
+                <div class="space-y-4">
+                    <div class="bg-slate-50 p-3 rounded-lg">
+                        <p class="font-bold">${name} (${code})</p>
+                    </div>
+                    
+                    <div class="border-t pt-4">
+                        <h4 class="font-bold text-slate-700 mb-3">تعديل الصلاحيات:</h4>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="editPermFine" ${userData.pFine === 'نعم' ? 'checked' : ''} class="w-4 h-4">
+                                <span class="text-sm">غرامات</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="editPermBonus" ${userData.pBonus === 'نعم' ? 'checked' : ''} class="w-4 h-4">
+                                <span class="text-sm">مكافآت</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="editPermRatio" ${userData.pRatio === 'نعم' ? 'checked' : ''} class="w-4 h-4">
+                                <span class="text-sm">نسب ونقاط</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="editPermHR" ${userData.pHR === 'نعم' ? 'checked' : ''} class="w-4 h-4">
+                                <span class="text-sm">موارد بشرية</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="editPermAdmin" ${userData.pAdmin === 'نعم' ? 'checked' : ''} class="w-4 h-4">
+                                <span class="text-sm">مدير النظام</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            showModal(`تعديل صلاحيات ${name}`, content, async () => {
+                const updatedData = {
+                    code: code,
+                    pFine: document.getElementById('editPermFine').checked ? 'نعم' : 'لا',
+                    pBonus: document.getElementById('editPermBonus').checked ? 'نعم' : 'لا',
+                    pRatio: document.getElementById('editPermRatio').checked ? 'نعم' : 'لا',
+                    pHR: document.getElementById('editPermHR').checked ? 'نعم' : 'لا',
+                    pAdmin: document.getElementById('editPermAdmin').checked ? 'نعم' : 'لا'
+                };
+                
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: "manage_users",
+                            subAction: "update_permissions",
+                            userData: updatedData
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    if(data.result === "success") {
+                        showToast("تم تحديث الصلاحيات بنجاح", "success");
+                        closeModal();
+                        loadUsersList();
+                    } else {
+                        showToast(data.message, "error");
+                    }
+                } catch(error) {
+                    showToast("خطأ في الاتصال", "error");
+                }
+            });
+        }
+
+        async function deleteUser(row) {
+            if(!confirm("هل أنت متأكد من حذف هذا المستخدم؟")) return;
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "manage_users",
+                        subAction: "delete",
+                        row: row
+                    })
+                });
+                
+                const data = await response.json();
+                if(data.result === "success") {
+                    showToast("تم حذف المستخدم بنجاح", "success");
+                    loadUsersList();
+                } else {
+                    showToast(data.message, "error");
+                }
+            } catch(error) {
+                showToast("خطأ في الاتصال", "error");
+            }
+        }
+
+        // ================ تعديل المعاملات ================
+        function openEditModal(id, sheetType, currentType, currentAmount, currentReason) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editSheetType').value = sheetType;
+            document.getElementById('editType').value = currentType;
+            document.getElementById('editAmount').value = currentAmount;
+            document.getElementById('editReason').value = currentReason;
+            
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        async function saveEditTransaction() {
+            const id = document.getElementById('editId').value;
+            const sheetType = document.getElementById('editSheetType').value;
+            const newType = document.getElementById('editType').value;
+            const newAmount = document.getElementById('editAmount').value;
+            const newReason = document.getElementById('editReason').value;
+            
+            if(!newType || !newAmount || !newReason) {
+                showToast("يرجى ملء جميع الحقول", "error");
+                return;
+            }
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "edit_transaction",
+                        id: id,
+                        sheetType: sheetType,
+                        newType: newType,
+                        newAmount: newAmount,
+                        newReason: newReason,
+                        editedBy: currentUser.name
+                    })
+                });
+                
+                const data = await response.json();
+                if(data.result === "success") {
+                    showToast("تم تعديل المعاملة بنجاح", "success");
+                    closeEditModal();
+                    
+                    // إعادة تحميل البيانات حسب الصفحة الحالية
+                    if(document.getElementById('hrSection').classList.contains('hidden') === false) {
+                        if(document.getElementById('tabMon').classList.contains('active')) {
+                            loadMonitoring();
+                        } else if(document.getElementById('tabObj').classList.contains('active')) {
+                            loadObjections();
+                        }
+                    }
+                } else {
+                    showToast(data.message, "error");
+                }
+            } catch(error) {
+                showToast("خطأ في الاتصال", "error");
+            }
+        }
+
+        // ================ الاعتراضات ================
+        function openObjectionModal(id, sheetType) {
+            const content = `
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">سبب الاعتراض</label>
+                        <textarea id="objectionReason" class="input-field h-32 resize-none" placeholder="اكتب سبب اعتراضك هنا..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">إرفاق صورة (اختياري)</label>
+                        <input type="file" id="objectionImage" class="input-field" accept="image/*">
+                        <p class="text-xs text-slate-500 mt-1">يمكنك إرفاق صورة كدليل على الاعتراض</p>
+                    </div>
+                </div>
+            `;
+            
+            showModal("تقديم اعتراض", content, async () => {
+                const reason = document.getElementById('objectionReason').value;
+                const fileInput = document.getElementById('objectionImage');
+                let imageBase64 = null;
+                
+                if(!reason) {
+                    showToast("يرجى كتابة سبب الاعتراض", "error");
+                    return;
+                }
+                
+                if(fileInput.files.length > 0) {
+                    imageBase64 = await toBase64(fileInput.files[0]);
+                }
+                
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: "submit_objection",
+                            id: id,
+                            sheetType: sheetType,
+                            reason: reason,
+                            imageBase64: imageBase64
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    if(data.result === "success") {
+                        showToast("تم تقديم الاعتراض بنجاح", "success");
+                        closeModal();
+                        loadMyProfileData();
+                    } else {
+                        showToast(data.message, "error");
+                    }
+                } catch(error) {
+                    showToast("خطأ في الاتصال", "error");
+                }
+            });
+        }
+
+        function openHRActionModal(id, sheetType) {
+            let followGroupsOptions = '<option value="">اختر مجموعة المتابعة</option>';
+            detailsData.followGroups.forEach(group => {
+                followGroupsOptions += `<option value="${group.id}">${group.name}</option>`;
+            });
+            
+            const content = `
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">القرار</label>
+                        <select id="hrActionStatus" class="input-field" onchange="toggleFollowGroup(this)">
+                            <option value="">اختر القرار</option>
+                            <option value="مقبول">مقبول</option>
+                            <option value="مرفوض">مرفوض</option>
+                            <option value="متابعة">إحالة للمتابعة</option>
+                        </select>
+                    </div>
+                    
+                    <div id="followGroupDiv" class="hidden">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">مجموعة المتابعة</label>
+                        <select id="hrFollowGroup" class="input-field">
+                            ${followGroupsOptions}
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">التعليق/الرد</label>
+                        <textarea id="hrResponse" class="input-field h-32 resize-none" placeholder="اكتب رد الموارد البشرية هنا..."></textarea>
+                    </div>
+                </div>
+            `;
+            
+            showModal("اتخاذ قرار إداري", content, async () => {
+                const status = document.getElementById('hrActionStatus').value;
+                const responseText = document.getElementById('hrResponse').value;
+                const followGroup = document.getElementById('hrFollowGroup').value;
+                
+                if(!status) {
+                    showToast("يرجى اختيار قرار", "error");
+                    return;
+                }
+                
+                if(status === "متابعة" && !followGroup) {
+                    showToast("يرجى اختيار مجموعة المتابعة", "error");
+                    return;
+                }
+                
+                try {
+                    const hrRequest = {
+                        action: "hr_action",
+                        id: id,
+                        sheetType: sheetType,
+                        status: status,
+                        response: responseText,
+                        hrUser: currentUser.name
+                    };
+                    
+                    if(status === "متابعة") {
+                        hrRequest.followGroupId = followGroup;
+                    }
+                    
+                    const hrResponse = await fetch(API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify(hrRequest)
+                    });
+                    
+                    const data = await hrResponse.json();
+                    if(data.result === "success") {
+                        showToast("تم حفظ القرار بنجاح", "success");
+                        closeModal();
+                        loadObjections();
+                    } else {
+                        showToast(data.message, "error");
+                    }
+                } catch(error) {
+                    showToast("خطأ في الاتصال", "error");
+                }
+            });
+        }
+
+        function toggleFollowGroup(select) {
+            const div = document.getElementById('followGroupDiv');
+            if(select.value === "متابعة") {
+                div.classList.remove('hidden');
+            } else {
+                div.classList.add('hidden');
+            }
+        }
+
+        // ================ الإجراءات الأخرى ================
+        async function saveBatchUpdates() {
+            if(selectedRows.size === 0) {
+                showToast("لم يتم تحديد أي عناصر", "error");
+                return;
+            }
+            
+            const updates = Array.from(selectedRows).map(item => {
+                const [id, sheetType] = item.split('|');
+                return { id, sheetType };
+            });
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "batch_confirm_followup",
+                        updates: updates
+                    })
+                });
+                
+                const data = await response.json();
+                if(data.result === "success") {
+                    showToast(`تم حفظ ${updates.length} عنصر`, "success");
+                    selectedRows.clear();
+                    updateBatchButton();
+                    loadMonitoring();
+                } else {
+                    showToast(data.message, "error");
+                }
+            } catch(error) {
+                showToast("خطأ في الاتصال", "error");
+            }
+        }
+
+        async function deleteHRTransaction(id, sheetType) {
+            if(!confirm("هل أنت متأكد من حذف هذه المعاملة؟")) return;
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "delete_transaction",
+                        id: id,
+                        sheetType: sheetType
+                    })
+                });
+                
+                const data = await response.json();
+                if(data.result === "success") {
+                    showToast("تم الحذف بنجاح", "success");
+                    loadMonitoring();
+                } else {
+                    showToast(data.message, "error");
+                }
+            } catch(error) {
+                showToast("خطأ في الاتصال", "error");
+            }
+        }
+
+        // ================ وظائف مساعدة ================
+        function hideAllSections() {
+            const sections = [
+                'loginSection',
+                'dashboardSection',
+                'bulkSection',
+                'hrSection',
+                'userHistorySection',
+                'settingsSection'
+            ];
+            
+            sections.forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+        }
+
+        function showDashboard() {
+            hideAllSections();
+            document.getElementById('dashboardSection').classList.remove('hidden');
+        }
+
+        function showModal(title, content, callback) {
+            document.getElementById('mTitle').textContent = title;
+            document.getElementById('mContent').innerHTML = content;
+            document.getElementById('uniModal').classList.remove('hidden');
+            
+            document.getElementById('mBtn').onclick = async () => {
+                const btn = document.getElementById('mBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="loader"></span>';
+                btn.disabled = true;
+                
+                await callback();
+                
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            };
+        }
+
+        function closeModal() {
+            document.getElementById('uniModal').classList.add('hidden');
+        }
+
+        function showToast(message, type = "info") {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('tMsg');
+            
+            msg.textContent = message;
+            
+            // تغيير اللون حسب النوع
+            toast.style.background = type === "error" ? '#dc2626' : 
+                                   type === "success" ? '#059669' : 
+                                   '#1e293b';
+            
+            // تغيير الأيقونة حسب النوع
+            icon.className = type === "error" ? 'fas fa-exclamation-circle' :
+                           type === "success" ? 'fas fa-check-circle' :
+                           'fas fa-info-circle';
+            
+            toast.classList.remove('hidden');
+            
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        function getTypeClass(type) {
+            if(type.includes('غرامة') || type.includes('تنبيه')) return 'type-fine';
+            if(type.includes('مكافأة') || type.includes('بشاشة')) return 'type-bonus';
+            if(type.includes('نسبة')) return 'type-ratio';
+            if(type.includes('نقاط')) return 'type-points';
+            if(type.includes('تخفيض')) return 'type-reduction';
+            return 'type-warning';
+        }
+
+        function getStatusClass(status) {
+            if(status === 'قيد المراجعة') return 'bg-amber-100 text-amber-800';
+            if(status === 'مقبول') return 'bg-green-100 text-green-800';
+            if(status === 'مرفوض') return 'bg-red-100 text-red-800';
+            if(status === 'متابعة') return 'bg-blue-100 text-blue-800';
+            return 'bg-slate-100 text-slate-800';
+        }
+
+        function formatNumber(num) {
+            if(!num && num !== 0) return '0';
+            return parseFloat(num).toLocaleString('ar-EG');
+        }
+
+        function toBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+    </script>
+</body>
+</html>
