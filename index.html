@@ -383,9 +383,25 @@
         function hrAct(id, st) { let opts = ''; state.meta.followGroups.forEach(g=>opts+=`<option value="${g.id}">${g.name}</option>`); modal("قرار إداري", `<select id="hSt" class="form-input mb-3"><option>مقبول</option><option>مرفوض</option><option value="متابعة">متابعة</option></select><select id="hGr" class="form-input mb-3">${opts}</select><textarea id="hRe" class="form-input" placeholder="تعليق"></textarea>`, async()=>{ await fetch(API, {method:'POST', body:JSON.stringify({action:'hr_action', id, sheetType:st, status:document.getElementById('hSt').value, response:document.getElementById('hRe').value, followGroupId:document.getElementById('hGr').value, hrUser:state.user.name})}); toast("تم"); loadHR(true); }); }
         function editTr(id, st, ty, am, re) { modal("تعديل", `<select id="eTy" class="form-input mb-2"><option value="${ty}">${ty}</option><option>غرامة</option><option>مكافأة</option></select><input id="eAm" type="number" value="${am}" class="form-input mb-2"><textarea id="eRe" class="form-input">${re}</textarea>`, async()=>{ await fetch(API, {method:'POST', body:JSON.stringify({action:'edit_transaction', id, sheetType:st, newType:document.getElementById('eTy').value, newAmount:document.getElementById('eAm').value, newReason:document.getElementById('eRe').value})}); toast("تم التعديل"); loadHR(false); }); }
         
-        // --- Profile ---
-        function navToProfile() { hideAll(); document.getElementById('profView').classList.remove('hidden'); document.getElementById('profTitle').innerText="ملفي الشخصي"; document.getElementById('profSub').innerText="سجل الدوام والواردات"; loadProf(true); }
-        function navToAdded() { hideAll(); document.getElementById('profView').classList.remove('hidden'); document.getElementById('profTitle').innerText="سجل إضافاتي"; document.getElementById('profSub').innerText="ما قمت بإدخاله"; document.getElementById('attSec').classList.add('hidden'); loadAddedHistory(); }
+        // --- Profile (FIXED) ---
+        function navToProfile() {
+            hideAll();
+            document.getElementById('profView').classList.remove('hidden');
+            document.getElementById('profTitle').innerText = "ملفي الشخصي";
+            // تم الإصلاح: إضافة عناوين الجدول
+            document.getElementById('profHead').innerHTML = `<tr><th>النوع</th><th>المبلغ</th><th>السبب</th><th>التاريخ</th><th>القرار</th></tr>`;
+            loadProf(true);
+        }
+
+        function navToAdded() {
+            hideAll();
+            document.getElementById('profView').classList.remove('hidden');
+            document.getElementById('profTitle').innerText = "سجل إضافاتي";
+            document.getElementById('attSec').classList.add('hidden');
+            // تم الإصلاح: إضافة عناوين الجدول
+            document.getElementById('profHead').innerHTML = `<tr><th>الموظف</th><th>النوع</th><th>المبلغ</th><th>السبب</th><th>التاريخ</th></tr>`;
+            loadAddedHistory();
+        }
 
         async function loadProf(incAtt) {
             const tb = document.getElementById('profBody'); tb.innerHTML='<tr><td colspan="6" class="text-center p-6"><span class="loader border-slate-300 border-t-blue-600"></span></td></tr>';
